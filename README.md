@@ -14,5 +14,5 @@ then run either in DrRacket and compile for your platform if needed
 alarm part 
 right click menu  (set alarm / Resize / move / quit)
 suppress win border
-adjust hour pos according minutes
+adjust hour pos according past minutes [DONE]
 see better gradiant when resize [DONE]

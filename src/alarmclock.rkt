@@ -16,7 +16,7 @@
 (define pi/60 (/ pi 60))
 (define 3pi/2 (* 3 pi/2))
 
-; compute font size and retur par list
+; compute font size and return w h pair list
 (define (fontsize adc txt font)
 (let-values ([( w h d v)  (send adc get-text-extent txt font )  ])
   (list w h)
@@ -39,14 +39,14 @@
                       (list 0.5 (make-object color% 0 255 0 0.3))
                       (list 1   (make-object color% 0 0 255 0.3)))])]))
 
-;  draw 12 lines for theta in range(0, step=pi/6, length=12)
+;  draw 12 lines + hour txt for theta in range(0, step=pi/6, length=12)
 (define (draw-clock adc cx cy cr )
   (send adc set-font (make-font #:size (/ cr 9)  #:weight 'ultraheavy #:family 'decorative) )
   (send adc set-text-foreground "Black")
   (for ([a  (in-range (* 2 pi)  0 (-(/ pi 6)))]
-        [i  (in-range 12 0 -1 )]
+        [i  (in-range 12 0 -1 )]  ; rotation is anti clock so reverse count
        )
-    (let* ([hh  (if(> i 9)(- i 9) (+ 3 i))]
+    (let* ([hh  (if(> i 9)(- i 9) (+ 3 i))] 
           [barx0 (- cr (/ cr 3.5))]
           [barx1 (- cr (/ cr 4.6))]
           [tcr (- cr  (/ cr 8))]
@@ -61,15 +61,12 @@
      (send adc  draw-line barx0  0 barx1 0))   
   )))
 
-; draw seconds for theta in range(0, step=pi/30, length=s+1)
-;(define (drawneedle-seconds adc cx cy cr hh)
-;  )
-; draw drawneedle 
+; draw drawneedles 
 (define (drawneedle adc  hoursize angle)
      (send adc  set-rotation angle)
      (send adc set-pen "black" 2 'solid)
      (send adc  draw-line 0 0 hoursize 0)
-     (let* ([p (new dc-path%)]
+     (let* ([p (new dc-path%)] ; prepare neddle path 
            [p1 (/ hoursize 3)]
            [p2 5] [p3 -5]
            [p4 (- hoursize p1) ])
@@ -82,7 +79,8 @@
      (send adc set-brush "Gold" 'solid) 
      (send adc draw-path p)  )
   )
-(define (drawnseconds adc  cr angle)
+; draw seconds
+(define (drawseconds adc  cr angle)
       (let* (
            [size1 (- cr  (/ cr 8) )]
            [size2 (- cr (/ cr 6) -10)])
@@ -94,8 +92,7 @@
 ; event on paint
 (define (do-paint canvas adc )
   (send adc set-smoothing 'smoothed)
-  
-   (let-values ([(cx cy)  (send canvas get-client-size)])
+   (let-values ([(cx cy)  (send canvas get-client-size)]) ; canvas size
      
     (let* ( [d (current-date)]
             [cmy (round (/ cy 2))]
@@ -105,9 +102,9 @@
             [cr/4 (/ cr 4)]
             [hoursize (/ cr 2.2)]
             [minutesize (/ cr 1.5)]
-            (day (date-hour d))
-            (month (date-month d))
-            (year (date-year d))
+            [day (date-day d)] ; set all date time part
+            [month (date-month d)]
+            [year (date-year d)]
             [hour (date-hour d)]
             [minutes (date-minute d)]
             [seconds (date-second d)]
@@ -115,39 +112,42 @@
             [hms  (format "~a:~a:~a" (ft hour) (ft minutes) (ft seconds)) ]
             [datesize  (fontsize adc today (send adc get-font))] ; date text size
             [hmssize  (fontsize adc hms(send adc get-font))]  ; hms text sier
-            [datexpos (-(/ (car datesize) 2))]
+            [datexpos (-(/ (car datesize) 2))] ; compute text x y pos 
             [dateypos  (-  (+ cr/4 (cadr datesize)))] 
             [hmsxpos (-(/ (car hmssize) 2))]
             [hmsypos   cr/4 ]            
-            [hourangle (+ pi/2 (* (+ hour (/ minutes 90))  (- pi/6))) ]
-            [minuterangle (+ pi/2 (* minutes (- pi/30)))]
-            [secondangle  (+ pi/2 (* seconds (- pi/30)))]
-            [bg (bg-brush cx cy)]
+            [hourangle (+ pi/2 (* (+ hour (/ minutes 90))  (- pi/6))) ] ;set hour angle adjust a few according past minutes
+            [minuterangle (+ pi/2 (* minutes (- pi/30)))] ; set minute angle
+            [secondangle  (+ pi/2 (* seconds (- pi/30)))] ; set second angle
+            [bgcolor (bg-brush cx cy)]
           )
      (send adc set-origin cmx cmy)
-     (send adc set-brush bg)
+     (send adc set-brush bgcolor)
      (send adc draw-ellipse(- cr) (- cr) (* 2 cr) (* 2 cr)  )
      (send adc set-pen blue-pen)
      (send adc set-brush blue-brush) 
-     (send adc draw-ellipse -10 -10 20 20 )
+     (send adc draw-ellipse -10 -10 20 20 ) ; draw center
      (send adc set-brush transparent-brush)
-     (send adc draw-ellipse(- cr) (- cr) (* 2 cr) (* 2 cr)  )
-     (draw-clock adc cmx cmy cr )
-     (drawneedle adc  hoursize hourangle)
-     (drawneedle adc  minutesize minuterangle)
-     (drawnseconds adc cr secondangle)
+     (send adc draw-ellipse(- cr) (- cr) (* 2 cr) (* 2 cr)  ) ; draw external circle
+     (draw-clock adc cmx cmy cr ) ; draw clock internal
+     (drawneedle adc  hoursize hourangle) ; draw hour neddle 
+     (drawneedle adc  minutesize minuterangle)  ; draw minutes neddle 
+     (drawseconds adc cr secondangle) ; draw seconds neddle 
       (send adc  set-rotation 0 ) 
-     (send adc draw-text hms hmsxpos hmsypos #f 0 )
-     (send adc draw-text today  datexpos dateypos #f 0 ) 
+     (send adc draw-text hms hmsxpos hmsypos #f 0 ) ; draw digital hour
+     (send adc draw-text today  datexpos dateypos #f 0 ) ; draw date
     ))
   (send adc flush)
   )
 
+; force redraw clock
 (define (redraw) (send canvas refresh))
+
+; class myframe
 (define myframe% (class frame% 
                    (super-new)) 
   )
-;; main frame with canvas inside
+;; main windows frame with canvas inside
 (define mainframe (new myframe% [label "demo"][width 200][height 200]
                        ;[alignment (list 'center 'center)]
                        ))
@@ -156,15 +156,15 @@
                     ;[style (list 'border)]
                     ;[alignment (list 'center 'center)]
                     ))
-;(define hpanel (new horizontal-panel%   [parent vpanel][stretchable-height #f][stretchable-width #f]))
 
 (define canvas (new canvas%	[parent vpanel]
                     ;[style (list 'vscroll 'hscroll )]
                     [paint-callback do-paint]))
 
-;(send mainframe create-status-line)
 (send mainframe show #t)
+
 (define atimer (new timer%	 
    		[notify-callback redraw ]	 
    	 	))
+; execute time each second
 (send atimer start 1000)
