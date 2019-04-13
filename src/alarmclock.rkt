@@ -142,14 +142,42 @@
 
 ; force redraw clock
 (define (redraw) (send canvas refresh))
+; show hide border
+
+; handle mouse event 'right-up  
+; (send a-window popup-menu menu x y)
+
+
+; handle mouse event 
+(define (handle-mouse ev)
+     (when (send ev button-up? 'right )
+        (let [(mx (send ev get-x))
+              (my (send ev get-y))
+             ]
+         (send mainframe popup-menu popmenu mx my) 
+          
+         ;(send mainframe on-exit)
+         ;(exit)
+          )
+))
+
+; define timer
+(define atimer (new timer%	 
+   		[notify-callback redraw ]	 
+   	 	))
+;stop timer when exit)
+(define (closetimer)(send atimer stop))
 
 ; class myframe
-(define myframe% (class frame% 
+(define myframe% (class frame%
+                   (define/override (on-subwindow-event target ev )(handle-mouse ev)) ; handle mouse
+                   (define/augment(on-close)(closetimer)) ; force stop timer
                    (super-new)) 
   )
 ;; main windows frame with canvas inside
-(define mainframe (new myframe% [label "demo"][width 200][height 200]
+(define mainframe (new myframe% [label "Clock"][width 200][height 200]
                        ;[alignment (list 'center 'center)]
+                       ;[style (list 'no-caption 'no-resize-border'no-system-menu )]
                        ))
 
 (define vpanel (new vertical-panel%   [parent mainframe]
@@ -161,10 +189,26 @@
                     ;[style (list 'vscroll 'hscroll )]
                     [paint-callback do-paint]))
 
+; handle popup menu
+(define popmenu
+   (let* (
+     [pmenu (new popup-menu%
+   	 	[title "clock cmd"]	 
+   	 	;[popdown-callback popdown-callback]	 
+   	 	;[demand-callback demand-callback]	 
+   	 	;[font font]
+          )]
+     [mborder (new menu-item% [label "show/hide border"][parent pmenu][callback (lambda (m e) (send mainframe on-exit))])]
+     [msep    (new separator-menu-item% [parent pmenu])]
+     [mquit  (new menu-item% [label "quit"][parent pmenu][callback (lambda (m e) (send mainframe on-exit))])]	 
+   )
+   pmenu
+  ))
+
 (send mainframe show #t)
 
-(define atimer (new timer%	 
-   		[notify-callback redraw ]	 
-   	 	))
+
+
+
 ; execute time each second
 (send atimer start 1000)

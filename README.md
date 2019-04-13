@@ -9,6 +9,7 @@ little alarmclock in Racket to compare with [Julia one](https://github.com/nodry
 No binary provided so please install [Racket](https://racket-lang.org/)
 
 then run either in DrRacket and compile for your platform if needed   
+or run cmd line `racket alarmclock.rkt` in src directory
 
 # to do
 alarm part 
