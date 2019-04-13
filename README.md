@@ -2,7 +2,7 @@
 # RktAlarmClock
 ## subject
 
-little alarmclock in Racket to compare with [Julia one](https://github.com/nodrygo/GtkLuxorNaiveDemo)   
+little alarmclock in Racket to compare with [Julia one](https://github.com/nodrygo/jAnalogAlarmClock)   
 
 ## instal
 
