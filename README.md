@@ -12,8 +12,8 @@ then run either in DrRacket and compile for your platform if needed
 or run cmd line `racket alarmclock.rkt` in src directory
 
 # to do
-alarm part 
-right click menu  (set alarm / Resize / move / quit)
-suppress win border
-adjust hour pos according past minutes [DONE]
-see better gradiant when resize [DONE]
+alarm part   
+right click menu  (set alarm / Resize / move / quit)    
+suppress win border        
+adjust hour pos according past minutes [DONE]     
+see better gradiant when resize [DONE]     

@@ -62,7 +62,7 @@
   )))
 
 ; draw drawneedles 
-(define (drawneedle adc  hoursize angle)
+(define (drawneedle adc  hoursize angle bgcolor)
      (send adc  set-rotation angle)
      (send adc set-pen "black" 2 'solid)
      (send adc  draw-line 0 0 hoursize 0)
@@ -76,7 +76,7 @@
        (send p line-to   p1 p3)
        (send p line-to 0 0)
         (send p close)
-     (send adc set-brush "Gold" 'solid) 
+     (send adc set-brush bgcolor 'solid) 
      (send adc draw-path p)  )
   )
 ; draw seconds
@@ -130,8 +130,8 @@
      (send adc set-brush transparent-brush)
      (send adc draw-ellipse(- cr) (- cr) (* 2 cr) (* 2 cr)  ) ; draw external circle
      (draw-clock adc cmx cmy cr ) ; draw clock internal
-     (drawneedle adc  hoursize hourangle) ; draw hour neddle 
-     (drawneedle adc  minutesize minuterangle)  ; draw minutes neddle 
+     (drawneedle adc  minutesize minuterangle "MediumGoldenrod")  ; draw minutes neddle
+     (drawneedle adc  hoursize hourangle "Gold") ; draw hour neddle 
      (drawseconds adc cr secondangle) ; draw seconds neddle 
       (send adc  set-rotation 0 ) 
      (send adc draw-text hms hmsxpos hmsypos #f 0 ) ; draw digital hour
@@ -206,9 +206,5 @@
   ))
 
 (send mainframe show #t)
-
-
-
-
 ; execute time each second
 (send atimer start 1000)
