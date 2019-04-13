@@ -1,2 +1,14 @@
+![splash image](images/RktClock.png) 
 # RktAlarmClock
-alarmclock in Racket
+## subject
+
+little alarmclock in Racket to compare with [Julia one](https://github.com/nodrygo/GtkLuxorNaiveDemo)   
+
+## instal
+
+No binary provided so please install [Racket](https://racket-lang.org/)
+
+then run either in DrRacket and compile for your platform if needed   
+
+# warning 
+alarm part not yet done   
