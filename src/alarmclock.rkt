@@ -16,10 +16,29 @@
 (define pi/60 (/ pi 60))
 (define 3pi/2 (* 3 pi/2))
 
+; compute font size and retur par list
 (define (fontsize adc txt font)
 (let-values ([( w h d v)  (send adc get-text-extent txt font )  ])
   (list w h)
 ))
+
+; format 2 digit with 0
+(define (ft t )(~r t #:min-width 2 #:pad-string "0"))
+
+; create bg gradiant
+(define (bg-brush x y)
+    (new brush%
+         [gradient
+          (new linear-gradient%
+               [x0 0]
+               [y0 (/ y 2)]
+               [x1 (/ x 2)]
+               [y1 0]
+               [stops
+                (list (list 0  (   make-object color% 255 0 0 0.3))
+                      (list 0.5 (make-object color% 0 255 0 0.3))
+                      (list 1   (make-object color% 0 0 255 0.3)))])]))
+
 ;  draw 12 lines for theta in range(0, step=pi/6, length=12)
 (define (draw-clock adc cx cy cr )
   (send adc set-font (make-font #:size (/ cr 9)  #:weight 'ultraheavy #:family 'decorative) )
@@ -72,21 +91,6 @@
      (send adc  draw-line 0 0 size2 0) 
   ))
 
-;
-(define (ft t )(~r t #:min-width 2 #:pad-string "0"))
-; create bg
-(define (ellipse-brush x y)
-    (new brush%
-         [gradient
-          (new linear-gradient%
-               [x0 0]
-               [y0 y]
-               [x1 x]
-               [y1 0]
-               [stops
-                (list (list 0   (make-object color% 255 0 0))
-                      (list 0.5 (make-object color% 0 255 0))
-                      (list 1   (make-object color% 0 0 255)))])]))
 ; event on paint
 (define (do-paint canvas adc )
   (send adc set-smoothing 'smoothed)
@@ -115,10 +119,10 @@
             [dateypos  (-  (+ cr/4 (cadr datesize)))] 
             [hmsxpos (-(/ (car hmssize) 2))]
             [hmsypos   cr/4 ]            
-            [hourangle (+ pi/2 (* hour (- pi/6))) ]
+            [hourangle (+ pi/2 (* (+ hour (/ minutes 90))  (- pi/6))) ]
             [minuterangle (+ pi/2 (* minutes (- pi/30)))]
             [secondangle  (+ pi/2 (* seconds (- pi/30)))]
-            [bg (ellipse-brush cx cy)]
+            [bg (bg-brush cx cy)]
           )
      (send adc set-origin cmx cmy)
      (send adc set-brush bg)
